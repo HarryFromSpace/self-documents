@@ -1,0 +1,117 @@
+MicroServices :-
+
+*) We will create Eureka Server(or Service) to Register and Discover other rest(or simple) services or web applications.
+*) Open "start.spring.io" and Create Three Projects:-
+	--------------------------------------------------------------------------------------------
+	1)Eureka server :-
+		Dependency:- eureka server
+		Import it as maven project
+		Changes :- 
+			a) write @EnableEurekaServer on main class. 
+			b) open application.properties:-
+				spring.application.name = eureka-server (same as project name)
+				server.port=8070 (in case port number is not specified, it will use 8761)
+			c) create application.yml :-
+				server:
+					port: 8070		
+				eureka:
+					client:
+						registerWithEureka: false	
+						fetchRegistry: false
+					server:
+						waitTimeInMsWhenSyncEmpty: 0
+	--------------------------------------------------------------------------------------------
+	2)hello server :- 
+		Dependency:- eureka discovery
+		Import it as maven project
+		Changes :- 
+			a) write @EnableDiscoveryClient (or @EnableEurekaClient) on main class.
+			b) create application.yml :-
+				spring:
+					application:
+						name:	hello-server
+				server:
+					port: 8071
+				eureka:
+					client:
+						registerWithEureka: true
+						fetchRegistry: true
+						serviceUrl:
+							defaultZone: http://localhost:8070/eureka/
+				instance:
+					hostname: localhost
+	--------------------------------------------------------------------------------------------
+	3)hello client :- 
+		Dependency:- eureka discovery
+		Import it as maven project
+		Changes :- 
+			a) write @EnableDiscoveryClient (or @EnableEurekaClient) on main class.
+			b) create application.yml (same file as hello-server with minimum changes bcz both are just services for eureka server):-
+					spring:
+					application:
+						name:	hello-client
+				server:
+					port: 8072
+				eureka:
+					client:
+						registerWithEureka: true
+						fetchRegistry: true
+						serviceUrl:
+							defaultZone: http://localhost:8070/eureka/
+				instance:
+					hostname: localhost
+	--------------------------------------------------------------------------------------------
+
+*)  For all projects  => pom clean and install.
+
+*)  Run eureka-server => Open localhost:8070 on browser to view the dashboard of eureka server.
+							We can check that no service is register here.
+    Run hello-server  => Now refresh browser page.
+							You will found hello-server (a service) is register on eureka server.
+    Run hello-client  => Now refresh browser page.
+							You will found hello-client (a service) is register on eureka server.
+						
+*)  Now we want that one service will use other service.
+	(i.e. one service will make a call to other service for some operation or data).
+	So, we will create a rest template object in hello-client and make a call to hello-server for some data.
+	Changes :- 
+	----------------------------------------------------------------------------------------------
+		1) hello-client:- 	
+			a)  Open main file and write outside main class :-
+					@Configuration			
+					class config{
+						@Bean
+						@LoadBalanced
+						public RestTemplate restTemplate(){
+							return new RestTemplate();
+						}
+					}
+			b)  Create controller under same package and name it as HelloResource :-
+					@RestController
+					@RequestMapping("/rest/hello/client")
+					class HelloResource{
+						@Autowired
+						public RestTemplate restTemplate;
+						
+						@GetMapping
+						public String getHello(){
+							// server address from where we want to get some data
+							// also we can write hello-server instead of localhost:8072 
+							String url = "http://localhost:8072/rest/hello/server"; 
+							return restTemplate.getForObject(url,String.class); 
+						}
+					}
+	----------------------------------------------------------------------------------------------
+		2) hello-server:- 
+			a)  Create controller and name it as Hello Resource
+					@RestController
+					@RequestMapping("/rest/hello/server")
+					class HelloResource{
+						@GetMapping
+						public String getHello(){
+							return "Hello World....!!!!";
+						}
+					}
+	----------------------------------------------------------------------------------------------
+
+*) 

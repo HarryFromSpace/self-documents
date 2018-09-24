@@ -1,0 +1,13 @@
+How To Create Indentation in Eclipse Code
+
+1) During development Time Use "CTRL + SHFT + F"
+2) After Development 
+	You have to configure your own configuration style.
+	a) Open Eclipse -> Click Window(Top Headings) -> Click Preferences(In Last) => [A New Window Appears]
+	b) On left Side of new Window Find "Java" and click it -> now click "Code Style" -> click "Formatter".
+	c) Now on Middle Screen of new window, we have some buttons :- 
+	   New, Import, Export All => click Import -> select the Your Formatter file -> click Apply -> click Apply and Close.
+	d) Use Intendation
+		You have to open each and every file and Just Press :- (ctrl + shft + f) key simultaneously.
+
+[Note : Open sample/custom/yours Indentation file => go the third line and change name attribute to your project name.]

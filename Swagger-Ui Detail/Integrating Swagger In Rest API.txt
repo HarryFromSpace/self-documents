@@ -1,0 +1,96 @@
+[Note:- http://www.baeldung.com/swagger-2-documentation-for-spring-rest-api]
+
+When creating a rest Api a good documentation is instrumental. 
+And every change in Api should be simultaneously described in reference documentaion.
+So, accomplishing this would be very difficult task. So , we will automate this process using swagger api's.
+
+We will use Springfox implementation of Swagger 2 specification.
+
+1) Create a Rest API or use existing one.(Springboot with java)
+
+2) Maven Dependency
+	Add maven dependency for Swagger 2(Springfox implemenation) i.e.
+	<dependency>
+    		<groupId>io.springfox</groupId>
+   		<artifactId>springfox-swagger2</artifactId>
+   		<version>2.7.0</version>
+	</dependency>
+3) Configuartion
+    Write a Config class in java code:-
+    "The Swagger Configuartion mainly centers around Docket Bean."
+========================================================================
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig{
+	@Bean
+	public Docket api(){
+		return new Docket(DocumentaionType.SWAGGER_2).
+			.select()
+			.apis(RequestHandlerSelector.any())
+			.path(PathSelectors.any())
+			.build();
+	}
+}
+========================================================================
+4) Brief Explaination:-
+	a) Annotation @EnableSwagger2 is used for enabling Swagger 2.
+	b) After Docket Bean is defined using "new Docket(DocumenationType.SWAGGER_2)" 
+		its select() method return ApiSelectorBuilder instance.
+	c) ApiSelectorBuilder instance provides a way to control the endpoints exposed by Swagger.
+	d) Parameters for selecting RequestHandler can be configured with the help of 
+	   RequestHandlerSelectors and PathSelectors. and Using any() for both will create documentation for entire Api.
+		
+ This Configuration is enough for creating Documentation for Springboot projects.
+
+
+=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@* Additional Part =@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*
+
+5) Additional : ** For Other Spring Project Some Additional Tuning is Required **
+	-> Without SpringBoot you donot have luxury of auto-configuartion your resource handler.
+	-> Swagger UI adds a set of resources which you must configure as a part of a class that extends
+	   WebMvcConfigureeAdapter and is annotatted with @EnableWebMvc
+
+@EnableWebMvc
+public class AdditionalSwaggerConfig {
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
+		registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+	}
+}
+=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*=@*
+
+
+6) Verification
+	How to Verify that Swagger is Working or not??
+	-> To verify , you can visit:-
+		http://localhost:8080/spring-security-rest/api/v2/api-docs
+	-> The result is JSON response with large number of key-value pairs, which is not human readable.
+	-> So, we have Swagger UI for this purpose.
+
+7) Swagger UI
+	-> Built-in Solution which makes user interaction with "Swagger-generated API documenation" much easier.
+	-> Maven Dependency
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.7.0</version>
+		</dependency>
+	-> Test in Browser by visiting:-
+		http://localhost:8080/your-app-root/swagger-ui.html
+					OR
+		http://localhost:8080/swagger-ui.html
+
+8) Create HomeMapping Controller to map your Homepage to swagger-uri.
+
+@Controller
+@ApiIgnore
+public class SwaggerHomeMapping
+{
+
+    @RequestMapping("/")
+    private String swaggerHomeMapper()
+    {
+        return "redirect:/swagger-ui.html";
+    }
+}

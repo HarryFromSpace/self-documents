@@ -1,0 +1,194 @@
+Step 1) What do we need to install before starting??
+
+	-> Eclipse and java 8
+		- no need to install maven as now a days eclipse comes with embedded maven.
+		- Install jdk 1.8 (not jre).
+		- Eclipse With latest version amd maven with atleast 3.x version or greater would be recommended.
+Step 2) Open Eclipse -> Create a new Project -> Maven Project -> Click Simple Maven Project -> click next -> keep in mind [GroupId + ArtifactId = Project Name]
+-> groupId = com.myapp.springboot -> ArtifactId = my-work-poc  -> Finish.
+
+Step 3) pom.xml (project object model)
+	-> Configuration for maven.
+	-> open pom.xml -> see groupId and artifactId which we have entered.
+	-> add dependencies.
+
+	   src/main/java => project source code
+	   src/test/java => unit test or ui integration test.
+
+
+Step 4) Why we use maven??
+
+	-> As Spring project would use libraries i.e. jar files , these are called dependencies.
+	-> So, we will only mention dependencies into pom.xml and maven will provide that dependencies.
+	-> Earlier we use to download that dependency manualy and put it into our workspace 
+	   but with maven we only have to mention the dependency with it version only.
+	   For example:- Spring core library
+
+
+	   <dependencies>
+		<!-- Spring core dependency -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>4.3.5.RELEASE</version>
+		</dependency>
+		<!-- similarly for any other dependency -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>4.3.5.RELEASE</version>
+		</dependency>
+	   </dependencies>
+
+
+-> donot save -> check maven dependencies folder -> there is nothing -> now save pom.xml file -> now you can see spring core jar in maven dependencies folder.
+-> we can also see other jars, basically these jars are transitive dependencies 
+   that means we need spring core jar and spring core further need these jars.
+   so, these are transitive dependencies for us.
+
+
+
+Step 5) Now follow these 5 steps to launch application in spring boot as below:- 
+	a) Spring Boot Starter Parent.
+		-> The problem we have with spring  project is how to remember the version release of jars.
+		   So, add Starter Parent it will manages the dependencies version. for example :-
+
+			<parent>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-parent</artifactId>
+				<version>1.4.0.RELEASE</version>
+			</parent>
+
+		-> it also provide default plugins.
+		-> right click project -> click maven project -> update project -> now check jre version on your project folder.
+
+	b) Spring Boot Starter Web.
+		-> Kind of parent for building web Applications.(bring web framework
+		-> Before springboot we would download all the dependencies manualy and add it to workspace.
+		   It takes alot of time and full of headache. so, add Starter Web it will manages all the basic dependencies. for ex :- 
+			Replace all <dependency> tag with :- 
+
+			<dependency>
+				<groupId>org.framework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+			</dependency>
+
+		-> Don't save check maven dependency folder and then save this code then check maven dependencies folder.
+		-> It provide embedded tomcat, data binding jars, jackson jars and etc.
+
+	c) Java Version 8.
+		-> Configure it.
+		-> When you update project jre version showing is 1.6, but we want to use java 1.8. 
+		-> we are getting 1.6 version from parent POM whose link is given in our pom.xml . 
+		-> So, overwrite the properties in current pom.xml (or maven) as:-
+
+			<properties>
+				<java.version>1.8</java.version>
+			</properties> 
+
+		-> Now again right click project -> maven -> update project -> you will see the jre version 1.8.
+	
+	d) Spring Boot Plugin.
+		-> For Launching SpringBoot Application.
+		-> It should be after the dependencies(not always but preferred).
+		-> It help in creating war file.
+		-> For example:- 
+
+				<build>
+				    <plugins>
+					<plugin>
+					    <groupId>org.springframework.boot</groupId>
+					    <artifactId>spring-boot-maven-plugin</artifactId>
+					</plugin>
+				    </plugins>
+				</build>
+
+
+	Now pom.xml is ready now go for Application launcher.
+	e) Create Spring Boot Application Launcher.
+		-> Create Application file (i.e. main file).From where application start launching. For ex:- 
+		-> Open src/main/java and paste this file :- 
+
+		   @SpringBootApplication
+		   public class Application{
+			public static void main(String[] args){
+				ApplicationContext ctx = SpringApplication.run(Application.class,args);
+			}
+		   }
+
+		-> Now right click on main() (anywhere in the code or file name) -> run as java application.
+
+6) -> See Console, logging file will print information related to mapping connection etc. 
+   -> These logging files are also provided by spring-boot-starter-web.
+   -> As there is nothing on console bcz we have started an empty application. 
+   -> Now create the rest controller -> service layer -> Dao layer.
+
+
+7) @Autowired in Spring:-
+
+	Q:- By @Autowired how spring inject dependency and how would it know what to inject ????
+	A:- Spring will only inject that dependency which spring is managing. 
+	    For ex. we want service object should be injected by spring into controller.
+	    So, we tell spring to manage this dependency by writing @Service annotation on service class and making it spring managable bean. 
+	    And we write @Autowired in controller (over service object) , to tell spring that it is dependency and you have inject and manage it.
+
+
+8) Few Points Related To Spring Framework :- 
+
+   Q:- What if Spring doesn't found what it is looking for?
+   A:- For ex:- Remove @Service from service layer, it means now spring doesnot knows that it is a dependency for something.
+	        Now when we use @Autowired on service object in controller then spring thinks that @Autowired means it is dependency 
+	        And it start finding the dependency but it doesnot find any of the same type. So, it throws an error i.e.
+		NoSuchBeanDefinationException.
+
+ 	[Note :- @Service tells spring that it is dependency for someone and spring have to manage it.
+		 @Autowired tells spring that it is dependency for this class(or this class is dependent on this object) and spring have to manage it or inject it.]
+
+   Q:-  How spring knows where to search for beans to manage?
+   A:-  In the main() class look at the first line package com.myapp.my-work-poc; this is the package where spring looks for the component or bean.
+	If we make service layer or package outside this package then spring again will give the error i.e. NoSuchBeanDefinationException.
+	Because it will only scan into the same package and will not found the component.
+	So, what if we want to write service layer in other package like com.myapp.services??
+	Then we should give @ComponentScan("com.myapp") after @SpringBootApplication.
+
+	[Note: Once spring does component scan it create object of all the component which he has to manage 
+	       And then whenever it comes across @Autowired, it will look for the same type of object and autowired it.]
+
+	[Note: By default spring will scan the package given in main() class file 
+	       but by using @ComponentScan("....") we can also ask spring to scan this package.]
+
+   Q:-  What are the annotations Spring looks for?
+   A:-  @Controller, @Service, @Component, @Repository :- 
+	-> These are some basic annotations which Spring looks for.
+	-> Other than this spring also looks for other annotations like @RestController.
+	-> But @RestController -> it is inheritance or extension of @Controller.
+
+
+9) SPRING-BOOT-STARTER-WEB
+	-> Manage all the dependencies.(jars,tomcat etc)
+	-> Starter for building applications with SpringMVC.
+	-> Commonly used for building applications with SpringMVC or used with REST Services.
+
+	Q:- What version of spring-boot-starter-web is used????
+	A:- The version we mention in the parent tag in pom.xml is the same used for starter-web.
+	    You can also check using ctrl+click on starter-web in pom.xml it shows two options:-
+	    a) Open managed location for starter-web.
+	    b) Open pom.xml for starter-web.
+		-> You can open managed location(it is parent pom for starter-web).
+		   it will show same version as we given in parent tag(starter-parent) bcz parent tag is used for versioning.
+
+	Q:- What dependencies it brings in????
+	A:- 	-> You can also [ctrl+click on starter-web] the choose second option i.e. pom.xml for starter-web.
+		   It will show the dependencies which starter-web brings in(in dependencies tag).
+		   for ex:- From SpringBoot it brings :- spring-boot-starter , spring-boot-starter-tomcat 
+			    From hibernate it brings  :- hibernate-validators, 
+			    From Jacksoncore it brings:- jackson-databind,
+			    From Spring it brings     :- spring-web , spring-webmvc
+ 
+	Q:- What are the configurations it brings in????
+	A:- Suppose we are creating a project using spring mvc then we need to configure dispatcher servlet 
+	    But in springboot we donot need to configure it. SpringBoot will auto-configure it. 
+	    Open maven dependencies -> click on springbbot autoconfigure jar -> here you can see what are the auto-configuration it brings in.
+
+
+10) 
